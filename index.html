@@ -414,9 +414,6 @@
 
 <div id="toast"></div>
 
-<!-- =========================================================
-     FIREBASE SDK v10 (MODULAR)
-     ========================================================= -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -432,9 +429,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
-// =========================================================
-// FIREBASE CONFIG
-// =========================================================
 const firebaseConfig = {
   apiKey: "AIzaSyA8sTQx2u4vn_nXzqhJbv1EcPbFKSBjLLs",
   authDomain: "termoformagem-2c2ef.firebaseapp.com",
@@ -445,21 +439,12 @@ const firebaseConfig = {
   measurementId: "G-EKQ90STVSH"
 };
 
-// =========================================================
-// INICIALIZAÇÃO FIREBASE
-// =========================================================
 const app = initializeApp(firebaseConfig);
-const fdb = getFirestore(app);  // <-- ESSENCIAL: instância do Firestore
+const fdb = getFirestore(app);
 
-try {
-  getAnalytics(app);
-} catch (e) {
-  console.warn('Analytics indisponível', e);
-}
+try { getAnalytics(app); } catch(e){ console.warn('Analytics indisponível', e); }
 
-// =========================================================
-// CONFIGURAÇÃO
-// =========================================================
+/* CONFIG */
 const MACHINES = [
   "600/2","600/3","600/4",
   "790/1","790/2","790/3","790/4",
@@ -477,27 +462,16 @@ const MOTIVOS = [
 
 const PALETTE = ['#372A8C','#5B4BC4','#8B7BEC','#A99CF2','#C7BEFA','#4B3BB0','#6F5FDC','#B9AEF7','#2A1F6E','#D6D0FB'];
 
-// Firestore doc id não pode conter "/"
 const mid = m => m.replace(/\//g, '_');
 
-// =========================================================
-// ESTADO LOCAL
-// =========================================================
-const state = {
-  active:  {}, // maquina -> { start, motivo, obs, produto }
-  history: [], // array de paradas
-  produtos:{}  // maquina -> string
-};
-
+/* ESTADO */
+const state = { active:{}, history:[], produtos:{} };
 let cardRefs = {};
 let modalMachine = null;
 let modalMotivo = null;
-let firebaseReady = false;
 let initialLoadDone = false;
 
-// =========================================================
-// HELPERS
-// =========================================================
+/* HELPERS */
 const pad = n => String(n).padStart(2,'0');
 
 function fmtDur(sec){
@@ -546,9 +520,7 @@ function setConn(ok, text){
   document.getElementById('connText').textContent = text;
 }
 
-// =========================================================
-// PAINEL DE MÁQUINAS
-// =========================================================
+/* PAINEL */
 function renderMachines(){
   const grid = document.getElementById('machineGrid');
   grid.innerHTML = '';
@@ -574,8 +546,6 @@ function renderMachines(){
 
     const input = el.querySelector('.prod-input');
     const label = el.querySelector('.m-prod');
-
-    // Debounce por máquina
     let prodTimer = null;
 
     input.addEventListener('input', () => {
@@ -583,11 +553,8 @@ function renderMachines(){
       label.classList.remove('saved');
       label.classList.add('syncing');
       clearTimeout(prodTimer);
-      prodTimer = setTimeout(() => {
-        salvarProduto(m, input.value);
-      }, 500);
+      prodTimer = setTimeout(() => salvarProduto(m, input.value), 500);
     });
-
     input.addEventListener('blur', () => {
       clearTimeout(prodTimer);
       const v = input.value.trim();
@@ -595,10 +562,7 @@ function renderMachines(){
       input.value = v;
       salvarProduto(m, v);
     });
-
-    input.addEventListener('keydown', e => {
-      if(e.key === 'Enter') input.blur();
-    });
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') input.blur(); });
 
     el.querySelector('.m-btn').addEventListener('click', () => {
       if(state.active[m]) endStop(m);
@@ -608,12 +572,11 @@ function renderMachines(){
     grid.appendChild(el);
     cardRefs[m] = {
       el,
-      badge:  el.querySelector('.m-badge'),
-      timer:  el.querySelector('.m-timer'),
+      badge: el.querySelector('.m-badge'),
+      timer: el.querySelector('.m-timer'),
       motivo: el.querySelector('.m-motivo'),
-      btn:    el.querySelector('.m-btn'),
-      input,
-      label
+      btn: el.querySelector('.m-btn'),
+      input, label
     };
   });
 
@@ -627,7 +590,6 @@ function paintCards(){
     if(!r) return;
     const a = state.active[m];
 
-    // Nunca sobrescreve o campo se ele estiver em foco
     if(document.activeElement !== r.input){
       const wanted = state.produtos[m] || '';
       if(r.input.value !== wanted) r.input.value = wanted;
@@ -653,9 +615,7 @@ function paintCards(){
   });
 }
 
-// =========================================================
-// FIREBASE — ESCRITA (com logs)
-// =========================================================
+/* FIREBASE — ESCRITA */
 async function salvarProduto(m, valor){
   const r = cardRefs[m];
   if(r){
@@ -665,70 +625,64 @@ async function salvarProduto(m, valor){
     r.label._t = setTimeout(() => r.label.classList.remove('saved'), 900);
   }
   try {
-    console.log('[Firebase] Salvando produto:', m, '=', valor);
-    const docRef = doc(fdb, 'produtos', mid(m));
-    await setDoc(docRef, {
+    await setDoc(doc(fdb, 'produtos', mid(m)), {
       maquina: m,
       produto: valor || '',
       updatedAt: new Date().toISOString()
     });
-    console.log('[Firebase] Produto salvo com sucesso!');
+    console.log('[Firebase] ✅ Produto salvo:', m, '=', valor);
   } catch(e){
-    console.error('Erro ao salvar produto:', e);
+    console.error('[Firebase] ❌ Erro produto:', e);
     toast('Erro ao salvar produto: ' + e.message);
   }
 }
 
 async function iniciarParadaFirebase(m, motivo, obs, produto){
   try {
-    console.log('[Firebase] Iniciando parada:', m);
-    const docRef = doc(fdb, 'ativas', mid(m));
-    await setDoc(docRef, {
+    console.log('[Firebase] ▶ Iniciando parada:', m);
+    await setDoc(doc(fdb, 'ativas', mid(m)), {
       maquina: m,
       motivo,
       obs: obs || '',
       produto: produto || 'Não informado',
       start: new Date().toISOString()
     });
-    console.log('[Firebase] Parada iniciada com sucesso!');
+    console.log('[Firebase] ✅ Parada ATIVA gravada em /ativas/' + mid(m));
   } catch(e){
-    console.error('Erro ao iniciar parada:', e);
+    console.error('[Firebase] ❌ Erro iniciar parada:', e);
     toast('Erro ao iniciar parada: ' + e.message);
   }
 }
 
-async function encerrarParadaFirebase(m){
-  const a = state.active[m];
-  if(!a) return;
+// ⚠️ CORRIGIDO: agora recebe os dados como parâmetro (antes lia state.active[m] já deletado)
+async function encerrarParadaFirebase(stopData){
   try {
-    console.log('[Firebase] Encerrando parada:', m);
-    // Adiciona ao histórico com ID automático
-    const colRef = collection(fdb, 'paradas');
-    const docRef = await addDoc(colRef, {
-      maquina: m,
-      motivo: a.motivo,
-      obs: a.obs || '',
-      produto: a.produto || getProd(m),
-      start: a.start,
-      end: new Date().toISOString()
+    console.log('[Firebase] ⏹ Encerrando parada:', stopData.maquina);
+    const docRef = await addDoc(collection(fdb, 'paradas'), {
+      maquina: stopData.maquina,
+      motivo: stopData.motivo,
+      obs: stopData.obs || '',
+      produto: stopData.produto || 'Não informado',
+      start: stopData.start,
+      end: stopData.end
     });
-    console.log('[Firebase] Parada registrada com ID:', docRef.id);
+    console.log('[Firebase] ✅ Parada gravada em /paradas/' + docRef.id);
+
     // Remove da coleção de ativas
-    await deleteDoc(doc(fdb, 'ativas', mid(m)));
-    console.log('[Firebase] Parada ativa removida!');
+    await deleteDoc(doc(fdb, 'ativas', mid(stopData.maquina)));
+    console.log('[Firebase] ✅ Removida de /ativas/' + mid(stopData.maquina));
   } catch(e){
-    console.error('Erro ao encerrar parada:', e);
+    console.error('[Firebase] ❌ Erro encerrar parada:', e);
     toast('Erro ao encerrar parada: ' + e.message);
   }
 }
 
 async function excluirParadaFirebase(id){
   try {
-    console.log('[Firebase] Excluindo parada:', id);
     await deleteDoc(doc(fdb, 'paradas', id));
-    console.log('[Firebase] Parada excluída!');
+    console.log('[Firebase] ✅ Parada excluída:', id);
   } catch(e){
-    console.error('Erro ao excluir parada:', e);
+    console.error('[Firebase] ❌ Erro excluir:', e);
     toast('Erro ao excluir');
   }
 }
@@ -736,24 +690,21 @@ async function excluirParadaFirebase(id){
 async function limparHistoricoFirebase(){
   try {
     const ids = state.history.map(s => s.id);
-    console.log('[Firebase] Limpando histórico...', ids.length, 'registros');
+    console.log('[Firebase] Limpando', ids.length, 'registros...');
     await Promise.all(ids.map(id => deleteDoc(doc(fdb, 'paradas', id))));
-    console.log('[Firebase] Histórico limpo!');
+    console.log('[Firebase] ✅ Histórico limpo!');
   } catch(e){
-    console.error('Erro ao limpar histórico:', e);
+    console.error('[Firebase] ❌ Erro limpar:', e);
     toast('Erro ao limpar histórico');
   }
 }
 
-// =========================================================
-// FIREBASE — LISTENERS EM TEMPO REAL
-// =========================================================
+/* FIREBASE — LISTENERS */
 function startListeners(){
   console.log('[Firebase] Iniciando listeners...');
 
-  // --- PRODUTOS ---
+  // PRODUTOS
   onSnapshot(collection(fdb, 'produtos'), snap => {
-    console.log('[Firebase] Produtos atualizados:', snap.size);
     state.produtos = {};
     snap.forEach(d => {
       const data = d.data() || {};
@@ -764,17 +715,15 @@ function startListeners(){
     if(!initialLoadDone){
       initialLoadDone = true;
       setConn(true, 'Sincronizado');
-      firebaseReady = true;
-      console.log('[Firebase] ✅ Conectado e sincronizado!');
+      console.log('[Firebase] ✅ Conectado!');
     }
   }, err => {
-    console.error('Listener produtos:', err);
+    console.error('[Firebase] ❌ Listener produtos:', err);
     setConn(false, 'Erro conexão');
   });
 
-  // --- PARADAS ATIVAS ---
+  // ATIVAS
   onSnapshot(collection(fdb, 'ativas'), snap => {
-    console.log('[Firebase] Ativas atualizadas:', snap.size);
     state.active = {};
     snap.forEach(d => {
       const data = d.data() || {};
@@ -782,12 +731,11 @@ function startListeners(){
     });
     paintCards();
     refreshAllViews();
-  }, err => console.error('Listener ativas:', err));
+  }, err => console.error('[Firebase] ❌ Listener ativas:', err));
 
-  // --- HISTÓRICO ---
+  // HISTÓRICO
   const q = query(collection(fdb, 'paradas'), orderBy('start', 'desc'));
   onSnapshot(q, snap => {
-    console.log('[Firebase] Histórico atualizado:', snap.size);
     state.history = [];
     snap.forEach(d => {
       const data = d.data() || {};
@@ -795,10 +743,8 @@ function startListeners(){
     });
     refreshAllViews();
   }, err => {
-    console.error('Listener paradas (com orderBy):', err);
-    // Fallback sem ordenação
+    console.warn('[Firebase] orderBy falhou, usando fallback:', err);
     onSnapshot(collection(fdb, 'paradas'), snap2 => {
-      console.log('[Firebase] Histórico (fallback):', snap2.size);
       state.history = [];
       snap2.forEach(d => {
         const data = d.data() || {};
@@ -817,9 +763,7 @@ function refreshAllViews(){
   else renderDashboard();
 }
 
-// =========================================================
-// MODAL DE PARADA
-// =========================================================
+/* MODAL */
 function renderChips(){
   const box = document.getElementById('motivoChips');
   box.innerHTML = '';
@@ -856,7 +800,7 @@ function confirmStop(){
   const obs = document.getElementById('modalObs').value.trim();
   const produto = getProd(modalMachine);
 
-  // Atualização otimista local
+  // Otimista local
   state.active[modalMachine] = {
     start: new Date().toISOString(),
     motivo: modalMotivo,
@@ -870,35 +814,32 @@ function confirmStop(){
   toast('Parada iniciada · ' + modalMachine);
 }
 
-// =========================================================
-// INICIAR / ENCERRAR PARADA
-// =========================================================
+/* ✅ CORRIGIDO: passa os dados como parâmetro antes de deletar do state */
 function endStop(m){
   const a = state.active[m];
   if(!a) return;
 
-  // Otimista local
-  state.history.unshift({
-    id: 'tmp_' + Date.now(),
+  const stopData = {
     maquina: m,
     motivo: a.motivo,
     obs: a.obs || '',
     produto: a.produto || getProd(m),
     start: a.start,
     end: new Date().toISOString()
-  });
+  };
+
+  // Otimista local
+  state.history.unshift(Object.assign({ id: 'tmp_' + Date.now() }, stopData));
   delete state.active[m];
   paintCards();
   renderHistory();
   renderDashboard();
 
-  encerrarParadaFirebase(m);
+  encerrarParadaFirebase(stopData); // ✅ passa os dados!
   toast('Parada encerrada · ' + m);
 }
 
-// =========================================================
-// AGREGAÇÃO / FILTROS
-// =========================================================
+/* AGREGAÇÃO */
 function periodSince(period){
   if(period === 'hoje') return startOfToday();
   if(period === '7')    return Date.now() - 7  * 864e5;
@@ -920,14 +861,8 @@ function stopsForDashboard(){
   });
   state.history.forEach(s => {
     list.push({
-      id: s.id,
-      machine: s.maquina,
-      motivo: s.motivo,
-      obs: s.obs,
-      produto: s.produto,
-      start: s.start,
-      end: s.end,
-      ongoing: false
+      id: s.id, machine: s.maquina, motivo: s.motivo, obs: s.obs,
+      produto: s.produto, start: s.start, end: s.end, ongoing: false
     });
   });
 
@@ -942,10 +877,8 @@ function aggregate(stops){
     const d = durOf(s);
     byM[s.machine] = byM[s.machine] || { label:s.machine, count:0, time:0 };
     byM[s.machine].count++; byM[s.machine].time += d;
-
     byMo[s.motivo] = byMo[s.motivo] || { label:s.motivo, count:0, time:0 };
     byMo[s.motivo].count++; byMo[s.motivo].time += d;
-
     const prod = s.produto || 'Não informado';
     byP[prod] = byP[prod] || { label:prod, count:0, time:0 };
     byP[prod].count++; byP[prod].time += d;
@@ -957,9 +890,7 @@ function aggregate(stops){
   };
 }
 
-// =========================================================
-// DASHBOARD
-// =========================================================
+/* DASHBOARD */
 function renderDashboard(){
   const stops = stopsForDashboard();
   const { byMachine, byMotivo, byProduto } = aggregate(stops);
@@ -1084,9 +1015,7 @@ function renderDashboard(){
   document.getElementById('waText').value = buildSummary(stops, byMachine, byMotivo, byProduto, totalTime);
 }
 
-// =========================================================
-// RESUMO WHATSAPP
-// =========================================================
+/* WHATSAPP */
 function buildSummary(stops, byMachine, byMotivo, byProduto, totalTime){
   const periodKey = document.getElementById('dashPeriod').value;
   const periodLabel = { 'hoje':'Hoje', '7':'Últimos 7 dias', '30':'Últimos 30 dias', 'all':'Período completo' }[periodKey];
@@ -1145,9 +1074,7 @@ function buildSummary(stops, byMachine, byMotivo, byProduto, totalTime){
   return t;
 }
 
-// =========================================================
-// HISTÓRICO
-// =========================================================
+/* HISTÓRICO */
 function historyRows(){
   const mf = document.getElementById('hMachine').value;
   const mo = document.getElementById('hMotivo').value;
@@ -1164,14 +1091,8 @@ function historyRows(){
   });
   state.history.forEach(s => {
     list.push({
-      id: s.id,
-      machine: s.maquina,
-      motivo: s.motivo,
-      obs: s.obs,
-      produto: s.produto,
-      start: s.start,
-      end: s.end,
-      ongoing: false
+      id: s.id, machine: s.maquina, motivo: s.motivo, obs: s.obs,
+      produto: s.produto, start: s.start, end: s.end, ongoing: false
     });
   });
 
@@ -1215,9 +1136,7 @@ function renderHistory(){
   }).join('');
 }
 
-// =========================================================
-// FILTROS
-// =========================================================
+/* FILTROS */
 function fillFilters(){
   const selM = document.getElementById('hMachine');
   const selMo = document.getElementById('hMotivo');
@@ -1233,9 +1152,7 @@ function fillFilters(){
   });
 }
 
-// =========================================================
-// CSV
-// =========================================================
+/* CSV */
 function exportCSV(){
   const rows = historyRows();
   if(!rows.length){ toast('Nada para exportar.'); return; }
@@ -1264,24 +1181,19 @@ function exportCSV(){
   toast('CSV exportado.');
 }
 
-// =========================================================
-// NAVEGAÇÃO
-// =========================================================
+/* NAVEGAÇÃO */
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('view-' + btn.dataset.view).classList.add('active');
-
     if(btn.dataset.view === 'dashboard') renderDashboard();
     if(btn.dataset.view === 'historico') renderHistory();
   });
 });
 
-// =========================================================
-// EVENTOS
-// =========================================================
+/* EVENTOS */
 document.getElementById('modalCancel').addEventListener('click', closeModal);
 document.getElementById('modalConfirm').addEventListener('click', confirmStop);
 document.getElementById('modal').addEventListener('click', e => {
@@ -1305,9 +1217,7 @@ document.getElementById('hBody').addEventListener('click', e => {
       toast('Registro excluído.');
     }
   }
-  if(end){
-    endStop(end.dataset.end);
-  }
+  if(end){ endStop(end.dataset.end); }
 });
 
 document.getElementById('hPeriod').addEventListener('change', renderHistory);
@@ -1354,27 +1264,22 @@ document.getElementById('waCopy').addEventListener('click', async () => {
   }
 });
 
-// =========================================================
-// TICK (relógio + timers)
-// =========================================================
+/* TICK */
 let dashTick = 0;
 function tick(){
   const now = new Date();
   document.getElementById('liveClock').textContent =
     pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
   paintCards();
-
   dashTick++;
   if(dashTick % 5 === 0 && document.getElementById('view-dashboard').classList.contains('active')){
     renderDashboard();
   }
 }
 
-// =========================================================
-// INICIALIZAÇÃO
-// =========================================================
+/* INIT */
 function init(){
-  console.log('[App] Inicializando Termoformagem...');
+  console.log('[App] 🚀 Iniciando Termoformagem...');
   fillFilters();
   renderMachines();
   renderHistory();
