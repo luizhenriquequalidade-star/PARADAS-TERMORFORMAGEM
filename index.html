@@ -6,20 +6,11 @@
 <title>Termoformagem · Controle de Paradas</title>
 <style>
   :root{
-    --roxo:#372A8C;
-    --roxo-esc:#2A1F6E;
-    --roxo-med:#4B3BB0;
-    --lilas:#A99CF2;
-    --lilas-2:#C7BEFA;
-    --lilas-bg:#EFECFD;
-    --bg:#F6F5FB;
-    --card:#FFFFFF;
-    --txt:#2B2A3D;
-    --muted:#7A7793;
-    --ok:#2FB37A;
-    --danger:#E0533D;
-    --radius:16px;
-    --shadow:0 6px 24px rgba(55,42,140,.08);
+    --roxo:#372A8C; --roxo-esc:#2A1F6E; --roxo-med:#4B3BB0;
+    --lilas:#A99CF2; --lilas-2:#C7BEFA; --lilas-bg:#EFECFD;
+    --bg:#F6F5FB; --card:#FFFFFF; --txt:#2B2A3D; --muted:#7A7793;
+    --ok:#2FB37A; --danger:#E0533D;
+    --radius:16px; --shadow:0 6px 24px rgba(55,42,140,.08);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
@@ -28,43 +19,41 @@
     padding-bottom:40px;
   }
 
-  /* ---------- TOPBAR ---------- */
+  /* TOPBAR */
   .topbar{
     background:#fff;padding:16px 26px;display:flex;align-items:center;
     justify-content:space-between;gap:16px;border-bottom:1px solid #E7E4F5;
     position:sticky;top:0;z-index:50;box-shadow:0 2px 14px rgba(55,42,140,.05);
   }
+  .brand{display:flex;flex-direction:column}
   .logo .l1,.logo .l2{
     font-weight:800;color:var(--roxo);letter-spacing:-.01em;
     line-height:.92;font-size:29px;
   }
   .logo .l2{display:flex;align-items:flex-end;gap:10px}
   .arch{height:25px;width:auto;margin-bottom:3px}
-  .tag{
-    font-size:11.5px;letter-spacing:.22em;color:var(--roxo-med);
-    margin-top:6px;font-weight:600;
-  }
-  .clock{text-align:right;flex:0 0 auto}
+  .tag{font-size:11.5px;letter-spacing:.22em;color:var(--roxo-med);margin-top:6px;font-weight:600}
+  .top-right{display:flex;align-items:center;gap:18px}
+  .conn{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;
+        color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .conn .dot-conn{width:9px;height:9px;border-radius:50%;background:#F5B33C;
+                   box-shadow:0 0 0 3px rgba(245,179,60,.18);transition:.3s}
+  .conn.ok .dot-conn{background:var(--ok);box-shadow:0 0 0 3px rgba(47,179,122,.18)}
+  .conn.err .dot-conn{background:var(--danger);box-shadow:0 0 0 3px rgba(224,83,61,.18)}
+  .clock{text-align:right}
   .clock .h{font-size:19px;font-weight:800;color:var(--roxo);font-variant-numeric:tabular-nums}
   .clock .sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em;font-weight:700}
 
-  /* ---------- TABS ---------- */
-  .tabs{
-    max-width:1400px;margin:0 auto;padding:18px 26px 0;
-    display:flex;gap:10px;flex-wrap:wrap;
-  }
+  /* TABS */
+  .tabs{max-width:1400px;margin:0 auto;padding:18px 26px 0;display:flex;gap:10px;flex-wrap:wrap}
   .tab{
     background:#fff;border:1px solid #E7E4F5;border-radius:999px;
     padding:10px 22px;font-weight:700;font-size:13.5px;color:var(--roxo-med);
     cursor:pointer;transition:.2s;font-family:inherit;
   }
   .tab:hover{border-color:var(--lilas)}
-  .tab.active{
-    background:var(--roxo);color:#fff;border-color:var(--roxo);
-    box-shadow:0 8px 20px rgba(55,42,140,.25);
-  }
+  .tab.active{background:var(--roxo);color:#fff;border-color:var(--roxo);box-shadow:0 8px 20px rgba(55,42,140,.25)}
 
-  /* ---------- LAYOUT ---------- */
   main{max-width:1400px;margin:0 auto;padding:22px 26px 60px}
   .view{display:none;animation:fade .25s ease}
   .view.active{display:block}
@@ -77,20 +66,14 @@
   .d{width:9px;height:9px;border-radius:3px;display:inline-block}
   .d.ok{background:var(--ok)} .d.stop{background:var(--danger)}
 
-  /* ---------- MACHINE GRID ---------- */
-  .machine-grid{
-    display:grid;gap:14px;
-    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
-  }
+  /* MACHINE GRID */
+  .machine-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
   .machine{
     background:#fff;border-radius:var(--radius);padding:16px 16px 15px;
     border:1px solid #ECE9F8;box-shadow:var(--shadow);
     position:relative;overflow:hidden;transition:.25s;
   }
-  .machine::before{
-    content:'';position:absolute;left:0;top:0;bottom:0;width:5px;
-    background:var(--ok);transition:.25s;
-  }
+  .machine::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--ok);transition:.25s}
   .machine.stopped::before{background:var(--danger)}
   .machine.stopped{box-shadow:0 10px 28px rgba(224,83,61,.16);border-color:#F7D9D3}
   .m-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
@@ -105,9 +88,11 @@
   .m-prod{
     display:flex;align-items:center;gap:6px;margin-bottom:12px;
     background:var(--lilas-bg);border-radius:9px;padding:7px 10px;
-    border:1px solid #E2DDF8;transition:.15s;
+    border:1px solid #E2DDF8;transition:all .3s ease;
   }
   .m-prod:focus-within{border-color:var(--roxo-med);background:#fff;box-shadow:0 0 0 3px rgba(75,59,176,.08)}
+  .m-prod.saved{border-color:var(--ok) !important;background:#F4FDF8 !important}
+  .m-prod.syncing{border-color:#F5B33C !important;background:#FFFAF0 !important}
   .m-prod .ic{font-size:12px;flex:0 0 auto}
   .m-prod input{
     width:100%;border:none;background:transparent;outline:none;
@@ -121,10 +106,7 @@
     font-variant-numeric:tabular-nums;
   }
   .machine.stopped .m-timer{color:var(--roxo)}
-  .m-motivo{
-    font-size:12.5px;color:var(--muted);margin:7px 0 14px;
-    min-height:34px;line-height:1.4;
-  }
+  .m-motivo{font-size:12.5px;color:var(--muted);margin:7px 0 14px;min-height:34px;line-height:1.4}
   .m-btn{
     width:100%;border-radius:10px;padding:11px;font-weight:700;font-size:13px;
     cursor:pointer;font-family:inherit;transition:.2s;
@@ -134,7 +116,7 @@
   .machine.stopped .m-btn{background:var(--roxo);border-color:var(--roxo);color:#fff}
   .machine.stopped .m-btn:hover{background:var(--roxo-esc)}
 
-  /* ---------- TOOLBAR / INPUTS ---------- */
+  /* TOOLBAR */
   .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
   .toolbar .spacer{flex:1}
   input[type=text],input[type=date],input[type=tel],select{
@@ -159,11 +141,8 @@
   .btn.danger{background:#fff;border:1.5px solid #F3C9C1;color:#C6402C}
   .btn.danger:hover{background:#FDF1EF}
 
-  /* ---------- TABLES ---------- */
-  .table-wrap{
-    background:#fff;border-radius:var(--radius);border:1px solid #ECE9F8;
-    overflow:auto;box-shadow:var(--shadow);
-  }
+  /* TABLES */
+  .table-wrap{background:#fff;border-radius:var(--radius);border:1px solid #ECE9F8;overflow:auto;box-shadow:var(--shadow)}
   table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:820px}
   th{
     background:#F4F2FD;color:var(--roxo);text-align:left;padding:12px 14px;
@@ -174,37 +153,27 @@
   tbody tr:hover td{background:#FBFAFF}
   .tag-machine{font-weight:800;color:var(--roxo)}
   .tag-prod{font-size:11.5px;font-weight:700;color:var(--roxo-med);background:var(--lilas-bg);padding:3px 8px;border-radius:6px;display:inline-block}
-  .pill{
-    display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
-    padding:3px 8px;border-radius:999px;background:#FDE9E5;color:#C6402C;margin-left:6px;
-  }
-  .icon-btn{
-    border:1px solid #EEEBF8;background:#fff;border-radius:8px;padding:6px 9px;
-    cursor:pointer;font-size:13px;transition:.15s;
-  }
+  .pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
+        padding:3px 8px;border-radius:999px;background:#FDE9E5;color:#C6402C;margin-left:6px}
+  .icon-btn{border:1px solid #EEEBF8;background:#fff;border-radius:8px;padding:6px 9px;
+            cursor:pointer;font-size:13px;transition:.15s}
   .icon-btn:hover{background:#FDF1EF;border-color:#F3C9C1}
   .empty{padding:34px;text-align:center;color:var(--muted);font-size:13.5px}
 
-  /* ---------- KPIs ---------- */
+  /* KPIs */
   .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
-  .kpi{
-    background:#fff;border-radius:var(--radius);padding:18px;
-    border:1px solid #ECE9F8;box-shadow:var(--shadow);
-  }
+  .kpi{background:#fff;border-radius:var(--radius);padding:18px;border:1px solid #ECE9F8;box-shadow:var(--shadow)}
   .k-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:800;margin-bottom:9px}
   .k-value{font-size:25px;font-weight:800;color:var(--roxo);line-height:1.1}
   .k-sub{font-size:11.5px;color:var(--muted);margin-top:6px}
 
-  /* ---------- CARDS ---------- */
-  .card{
-    background:#fff;border-radius:var(--radius);padding:20px;
-    border:1px solid #ECE9F8;box-shadow:var(--shadow);margin-bottom:18px;
-  }
+  /* CARDS */
+  .card{background:#fff;border-radius:var(--radius);padding:20px;border:1px solid #ECE9F8;box-shadow:var(--shadow);margin-bottom:18px}
   .card h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--roxo);margin-bottom:18px}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   @media(max-width:960px){.grid-2{grid-template-columns:1fr}}
 
-  /* ---------- BARS ---------- */
+  /* BARS */
   .bar-row{display:grid;grid-template-columns:130px 1fr 110px;gap:12px;align-items:center;margin-bottom:10px}
   .bar-label{font-size:13px;font-weight:700;color:var(--roxo);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar-label small{display:block;color:var(--muted);font-size:10.5px;font-weight:600;letter-spacing:.02em}
@@ -213,17 +182,11 @@
   .bar-value{font-size:12px;color:var(--muted);text-align:right;font-weight:700;white-space:nowrap}
   .bar-row.motivo .bar-fill{background:linear-gradient(90deg,#5B4BC4,var(--lilas-2))}
 
-  /* ---------- DONUT ---------- */
+  /* DONUT */
   .donut-wrap{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
-  .donut{
-    width:180px;height:180px;border-radius:50%;position:relative;flex:0 0 auto;
-    background:conic-gradient(#EFECFD 0deg 360deg);
-  }
+  .donut{width:180px;height:180px;border-radius:50%;position:relative;flex:0 0 auto;background:conic-gradient(#EFECFD 0deg 360deg)}
   .donut::after{content:'';position:absolute;inset:27%;background:#fff;border-radius:50%}
-  .donut-center{
-    position:absolute;inset:0;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;z-index:2;text-align:center;padding:0 22px;
-  }
+  .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;text-align:center;padding:0 22px}
   .donut-center span{font-size:15px;font-weight:800;color:var(--roxo);line-height:1.15}
   .donut-center small{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin-top:3px}
   .legend{display:flex;flex-direction:column;gap:9px;font-size:13px;flex:1;min-width:200px}
@@ -231,7 +194,7 @@
   .legend-item .val{margin-left:auto;color:var(--muted);font-weight:700;font-size:12px}
   .dot{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
 
-  /* ---------- WHATSAPP ---------- */
+  /* WHATSAPP */
   .wa-box textarea{
     width:100%;min-height:230px;border:1.5px solid #E3DFF6;border-radius:12px;
     padding:14px;font-family:'Consolas','SF Mono',monospace;font-size:12.5px;
@@ -239,53 +202,41 @@
   }
   .wa-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
   .field{margin-bottom:14px}
-  .field label{
-    display:block;font-size:10.5px;font-weight:800;text-transform:uppercase;
-    letter-spacing:.09em;color:var(--muted);margin-bottom:8px;
-  }
+  .field label{display:block;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px}
 
-  /* ---------- MODAL ---------- */
-  .modal-backdrop{
-    position:fixed;inset:0;background:rgba(35,26,80,.55);backdrop-filter:blur(3px);
-    display:flex;align-items:center;justify-content:center;padding:20px;z-index:200;
-  }
+  /* MODAL */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(35,26,80,.55);backdrop-filter:blur(3px);
+                  display:flex;align-items:center;justify-content:center;padding:20px;z-index:200}
   .modal-backdrop[hidden]{display:none}
-  .modal{
-    background:#fff;border-radius:18px;padding:26px;width:100%;max-width:540px;
-    box-shadow:0 30px 70px rgba(30,20,70,.4);animation:pop .22s ease;
-    max-height:90vh;overflow:auto;
-  }
+  .modal{background:#fff;border-radius:18px;padding:26px;width:100%;max-width:540px;
+         box-shadow:0 30px 70px rgba(30,20,70,.4);animation:pop .22s ease;max-height:90vh;overflow:auto}
   @keyframes pop{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
   .modal h3{font-size:17px;color:var(--roxo);margin-bottom:6px;font-weight:800}
   .modal h3 span{color:var(--lilas)}
-  .modal-prod{
-    font-size:12.5px;color:var(--muted);margin-bottom:18px;
-    background:var(--lilas-bg);display:inline-block;padding:5px 11px;border-radius:8px;
-  }
+  .modal-prod{font-size:12.5px;color:var(--muted);margin-bottom:18px;
+              background:var(--lilas-bg);display:inline-block;padding:5px 11px;border-radius:8px}
   .modal-prod b{color:var(--roxo-med)}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
-  .chip{
-    border:1.5px solid #E3DFF6;background:#fff;border-radius:999px;
-    padding:8px 14px;font-size:12.5px;font-weight:700;color:var(--roxo-med);
-    cursor:pointer;transition:.15s;font-family:inherit;
-  }
+  .chip{border:1.5px solid #E3DFF6;background:#fff;border-radius:999px;
+        padding:8px 14px;font-size:12.5px;font-weight:700;color:var(--roxo-med);
+        cursor:pointer;transition:.15s;font-family:inherit}
   .chip:hover{border-color:var(--lilas);background:var(--lilas-bg)}
   .chip.sel{background:var(--roxo);border-color:var(--roxo);color:#fff}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
 
-  /* ---------- TOAST ---------- */
-  #toast{
-    position:fixed;left:50%;bottom:28px;transform:translate(-50%,26px);
-    background:var(--roxo);color:#fff;padding:12px 22px;border-radius:999px;
-    font-size:13.5px;font-weight:700;opacity:0;pointer-events:none;
-    transition:.3s;z-index:300;box-shadow:0 14px 34px rgba(55,42,140,.35);
-  }
+  /* TOAST */
+  #toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,26px);
+         background:var(--roxo);color:#fff;padding:12px 22px;border-radius:999px;
+         font-size:13.5px;font-weight:700;opacity:0;pointer-events:none;transition:.3s;
+         z-index:300;box-shadow:0 14px 34px rgba(55,42,140,.35)}
   #toast.show{opacity:1;transform:translate(-50%,0)}
 
   @media(max-width:640px){
     .topbar{padding:14px 16px}
     .logo .l1,.logo .l2{font-size:22px}
     .arch{height:19px}
+    .top-right{gap:10px}
+    .conn{display:none}
     main{padding:18px 14px 50px}
     .tabs{padding:14px 14px 0}
     .tab{padding:9px 16px;font-size:12.5px}
@@ -298,7 +249,6 @@
 </head>
 <body>
 
-<!-- ================= TOPBAR ================= -->
 <header class="topbar">
   <div class="brand">
     <div class="logo">
@@ -313,13 +263,18 @@
     </div>
     <div class="tag">controle de paradas</div>
   </div>
-  <div class="clock">
-    <div class="h" id="liveClock">--:--:--</div>
-    <div class="sub">tempo real</div>
+  <div class="top-right">
+    <div class="conn" id="connStatus">
+      <span class="dot-conn"></span>
+      <span id="connText">Conectando...</span>
+    </div>
+    <div class="clock">
+      <div class="h" id="liveClock">--:--:--</div>
+      <div class="sub">tempo real</div>
+    </div>
   </div>
 </header>
 
-<!-- ================= TABS ================= -->
 <nav class="tabs">
   <button class="tab active" data-view="painel">Painel de Máquinas</button>
   <button class="tab" data-view="historico">Histórico</button>
@@ -327,8 +282,7 @@
 </nav>
 
 <main>
-
-  <!-- ============ PAINEL ============ -->
+  <!-- PAINEL -->
   <section class="view active" id="view-painel">
     <div class="section-head">
       <h2>Máquinas em operação</h2>
@@ -340,10 +294,9 @@
     <div class="machine-grid" id="machineGrid"></div>
   </section>
 
-  <!-- ============ HISTÓRICO ============ -->
+  <!-- HISTÓRICO -->
   <section class="view" id="view-historico">
     <div class="section-head"><h2>Histórico de paradas</h2></div>
-
     <div class="toolbar">
       <select id="hPeriod">
         <option value="hoje">Hoje</option>
@@ -357,7 +310,6 @@
       <button class="btn ghost" id="btnCsv">⬇ Exportar CSV</button>
       <button class="btn danger" id="btnClear">Limpar histórico</button>
     </div>
-
     <div class="table-wrap">
       <table>
         <thead>
@@ -371,10 +323,9 @@
     </div>
   </section>
 
-  <!-- ============ DASHBOARD ============ -->
+  <!-- DASHBOARD -->
   <section class="view" id="view-dashboard">
     <div class="section-head"><h2>Dashboard de indicadores</h2></div>
-
     <div class="toolbar">
       <select id="dashPeriod">
         <option value="hoje" selected>Hoje</option>
@@ -443,25 +394,21 @@
       </div>
     </div>
   </section>
-
 </main>
 
-<!-- ================= MODAL ================= -->
+<!-- MODAL -->
 <div class="modal-backdrop" id="modal" hidden>
   <div class="modal">
     <h3>Registrar parada · <span id="modalMachine">—</span></h3>
     <div class="modal-prod">Produto em produção: <b id="modalProd">—</b></div>
-
     <div class="field">
       <label>Motivo da parada</label>
       <div class="chips" id="motivoChips"></div>
     </div>
-
     <div class="field">
       <label>Observação (opcional)</label>
       <input id="modalObs" type="text" placeholder="Ex.: molde 32 cavidades, aguardando eletricista...">
     </div>
-
     <div class="modal-actions">
       <button class="btn ghost" id="modalCancel">Cancelar</button>
       <button class="btn primary" id="modalConfirm">Iniciar parada</button>
@@ -471,7 +418,30 @@
 
 <div id="toast"></div>
 
-<script>
+<script type="module">
+/* =========================================================
+   FIREBASE SDK
+   ========================================================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA8sTQx2u4vn_nXzqhJbv1EcPbFKSBjLLs",
+  authDomain: "termoformagem-2c2ef.firebaseapp.com",
+  projectId: "termoformagem-2c2ef",
+  storageBucket: "termoformagem-2c2ef.firebasestorage.app",
+  messagingSenderId: "869439503893",
+  appId: "1:869439503893:web:62fb898ddabf2f3d84d81c",
+  measurementId: "G-EKQ90STVSH"
+};
+
+const app = initializeApp(firebaseConfig);
+const fdb = getFirestore(app);
+try { getAnalytics(app); } catch(e){ console.warn('Analytics indisponível', e); }
+
 /* =========================================================
    CONFIGURAÇÃO
    ========================================================= */
@@ -485,45 +455,29 @@ const MACHINES = [
 ];
 
 const MOTIVOS = [
-  "Troca de Molde",
-  "Setup / Ajuste",
-  "Troca de Bobina",
-  "Falta de Matéria-Prima",
-  "Manutenção Mecânica",
-  "Manutenção Elétrica",
-  "Falta de Operador",
-  "Limpeza",
-  "Problema de Qualidade",
-  "Outros"
+  "Troca de Molde","Setup / Ajuste","Troca de Bobina","Falta de Matéria-Prima",
+  "Manutenção Mecânica","Manutenção Elétrica","Falta de Operador",
+  "Limpeza","Problema de Qualidade","Outros"
 ];
 
 const PALETTE = ['#372A8C','#5B4BC4','#8B7BEC','#A99CF2','#C7BEFA','#4B3BB0','#6F5FDC','#B9AEF7','#2A1F6E','#D6D0FB'];
 
-const LS_KEY = 'termoformagem.paradas.v3';
+// Firestore doc id não pode conter "/"
+const mid = m => m.replace(/\//g, '_');
 
 /* =========================================================
-   ESTADO
+   ESTADO LOCAL (espelho em tempo real do Firestore)
    ========================================================= */
-let db = { active:{}, history:[], produtos:{} };
+const state = {
+  active:  {}, // maquina -> { start, motivo, obs, produto }
+  history: [], // array de paradas
+  produtos:{}  // maquina -> string
+};
+
 let cardRefs = {};
 let modalMachine = null;
 let modalMotivo = null;
-
-function load(){
-  try{
-    const raw = localStorage.getItem(LS_KEY) || localStorage.getItem('termoformagem.paradas.v2');
-    if(raw){
-      const p = JSON.parse(raw);
-      db.active   = p.active   || {};
-      db.history  = p.history  || [];
-      db.produtos = p.produtos || {};
-    }
-  }catch(e){ console.warn('Falha ao carregar dados', e); }
-}
-function save(){
-  try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
-  catch(e){ console.warn('Falha ao salvar dados', e); }
-}
+let firebaseReady = false;
 
 /* =========================================================
    HELPERS
@@ -542,12 +496,11 @@ function fmtDurLong(sec){
   return s + 's';
 }
 function fmtDT(iso){
+  if(!iso) return '—';
   const d = new Date(iso);
   return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
-function startOfToday(){
-  const d = new Date(); d.setHours(0,0,0,0); return d.getTime();
-}
+function startOfToday(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
 function durOf(s){
   const ini = new Date(s.start).getTime();
   const fim = s.end ? new Date(s.end).getTime() : Date.now();
@@ -566,8 +519,15 @@ function esc(str){
     .replace(/"/g,'&quot;');
 }
 function getProd(m){
-  const v = (db.produtos[m] || '').trim();
+  const v = (state.produtos[m] || '').trim();
   return v || 'Não informado';
+}
+function setConn(ok, text){
+  const el = document.getElementById('connStatus');
+  el.classList.remove('ok','err');
+  if(ok === true) el.classList.add('ok');
+  if(ok === false) el.classList.add('err');
+  document.getElementById('connText').textContent = text;
 }
 
 /* =========================================================
@@ -589,7 +549,7 @@ function renderMachines(){
       </div>
       <label class="m-prod" title="Produto em produção">
         <span class="ic">📦</span>
-        <input type="text" class="prod-input" placeholder="Produto em produção..." value="${esc(db.produtos[m] || '')}">
+        <input type="text" class="prod-input" placeholder="Produto em produção..." value="${esc(state.produtos[m] || '')}">
       </label>
       <div class="m-timer">00:00:00</div>
       <div class="m-motivo">Produção normal</div>
@@ -597,18 +557,35 @@ function renderMachines(){
     `;
 
     const input = el.querySelector('.prod-input');
+    const label = el.querySelector('.m-prod');
+
+    // Debounce por máquina
+    let prodTimer = null;
+
     input.addEventListener('input', () => {
-      db.produtos[m] = input.value;
-      save();
+      state.produtos[m] = input.value;
+      label.classList.remove('saved');
+      label.classList.add('syncing');
+      clearTimeout(prodTimer);
+      prodTimer = setTimeout(() => {
+        salvarProduto(m, input.value);
+      }, 500);
     });
+
     input.addEventListener('blur', () => {
-      db.produtos[m] = input.value.trim();
-      input.value = db.produtos[m];
-      save();
+      clearTimeout(prodTimer);
+      const v = input.value.trim();
+      state.produtos[m] = v;
+      input.value = v;
+      salvarProduto(m, v);
+    });
+
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Enter') input.blur();
     });
 
     el.querySelector('.m-btn').addEventListener('click', () => {
-      if(db.active[m]) endStop(m);
+      if(state.active[m]) endStop(m);
       else openModal(m);
     });
 
@@ -619,7 +596,8 @@ function renderMachines(){
       timer:  el.querySelector('.m-timer'),
       motivo: el.querySelector('.m-motivo'),
       btn:    el.querySelector('.m-btn'),
-      input
+      input,
+      label
     };
   });
 
@@ -631,7 +609,13 @@ function paintCards(){
   MACHINES.forEach(m => {
     const r = cardRefs[m];
     if(!r) return;
-    const a = db.active[m];
+    const a = state.active[m];
+
+    // Nunca sobrescreve o campo se ele estiver em foco
+    if(document.activeElement !== r.input){
+      const wanted = state.produtos[m] || '';
+      if(r.input.value !== wanted) r.input.value = wanted;
+    }
 
     if(a){
       r.el.classList.add('stopped');
@@ -654,6 +638,148 @@ function paintCards(){
 }
 
 /* =========================================================
+   FIREBASE — ESCRITA
+   ========================================================= */
+async function salvarProduto(m, valor){
+  const r = cardRefs[m];
+  if(r){
+    r.label.classList.remove('syncing');
+    r.label.classList.add('saved');
+    clearTimeout(r.label._t);
+    r.label._t = setTimeout(() => r.label.classList.remove('saved'), 900);
+  }
+  try {
+    await setDoc(doc(fdb, 'produtos', mid(m)), {
+      maquina: m,
+      produto: valor || '',
+      updatedAt: new Date().toISOString()
+    });
+  } catch(e){
+    console.error('Erro ao salvar produto:', e);
+    toast('Erro ao salvar produto (verifique conexão)');
+  }
+}
+
+async function iniciarParadaFirebase(m, motivo, obs, produto){
+  try {
+    await setDoc(doc(fdb, 'ativas', mid(m)), {
+      maquina: m,
+      motivo,
+      obs: obs || '',
+      produto: produto || 'Não informado',
+      start: new Date().toISOString()
+    });
+  } catch(e){
+    console.error('Erro ao iniciar parada:', e);
+    toast('Erro ao iniciar parada (verifique conexão)');
+  }
+}
+
+async function encerrarParadaFirebase(m){
+  const a = state.active[m];
+  if(!a) return;
+  try {
+    const paradaRef = doc(collection(fdb, 'paradas'));
+    await setDoc(paradaRef, {
+      maquina: m,
+      motivo: a.motivo,
+      obs: a.obs || '',
+      produto: a.produto || getProd(m),
+      start: a.start,
+      end: new Date().toISOString()
+    });
+    await deleteDoc(doc(fdb, 'ativas', mid(m)));
+  } catch(e){
+    console.error('Erro ao encerrar parada:', e);
+    toast('Erro ao encerrar parada (verifique conexão)');
+  }
+}
+
+async function excluirParadaFirebase(id){
+  try {
+    await deleteDoc(doc(fdb, 'paradas', id));
+  } catch(e){
+    console.error('Erro ao excluir parada:', e);
+    toast('Erro ao excluir');
+  }
+}
+
+async function limparHistoricoFirebase(){
+  try {
+    const ids = state.history.map(s => s.id);
+    await Promise.all(ids.map(id => deleteDoc(doc(fdb, 'paradas', id))));
+  } catch(e){
+    console.error('Erro ao limpar histórico:', e);
+    toast('Erro ao limpar histórico');
+  }
+}
+
+/* =========================================================
+   FIREBASE — LISTENERS EM TEMPO REAL
+   ========================================================= */
+function startListeners(){
+  // Produtos
+  onSnapshot(collection(fdb, 'produtos'), snap => {
+    state.produtos = {};
+    snap.forEach(d => {
+      const data = d.data() || {};
+      if(data.maquina) state.produtos[data.maquina] = data.produto || '';
+    });
+    paintCards();
+    refreshAllViews();
+    setConn(true, 'Sincronizado');
+    firebaseReady = true;
+  }, err => {
+    console.error('Listener produtos:', err);
+    setConn(false, 'Erro conexão');
+  });
+
+  // Paradas ativas
+  onSnapshot(collection(fdb, 'ativas'), snap => {
+    state.active = {};
+    snap.forEach(d => {
+      const data = d.data() || {};
+      if(data.maquina) state.active[data.maquina] = data;
+    });
+    paintCards();
+    refreshAllViews();
+  }, err => console.error('Listener ativas:', err));
+
+  // Histórico
+  const q = query(collection(fdb, 'paradas'), orderBy('start', 'desc'));
+  onSnapshot(q, snap => {
+    state.history = [];
+    snap.forEach(d => {
+      const data = d.data() || {};
+      state.history.push(Object.assign({ id: d.id }, data));
+    });
+    refreshAllViews();
+  }, err => {
+    console.error('Listener paradas:', err);
+    // Fallback sem ordenação (caso índice ainda não esteja pronto)
+    onSnapshot(collection(fdb, 'paradas'), snap2 => {
+      state.history = [];
+      snap2.forEach(d => {
+        const data = d.data() || {};
+        state.history.push(Object.assign({ id: d.id }, data));
+      });
+      refreshAllViews();
+    });
+  });
+}
+
+function refreshAllViews(){
+  const histVisible = document.getElementById('view-historico').classList.contains('active');
+  const dashVisible = document.getElementById('view-dashboard').classList.contains('active');
+  if(histVisible) renderHistory();
+  if(dashVisible) renderDashboard();
+  else {
+    // mantém dashboard em cache atualizado quando voltar
+    renderDashboard();
+  }
+}
+
+/* =========================================================
    MODAL DE PARADA
    ========================================================= */
 function renderChips(){
@@ -664,10 +790,7 @@ function renderChips(){
     b.type = 'button';
     b.className = 'chip' + (modalMotivo === mot ? ' sel' : '');
     b.textContent = mot;
-    b.addEventListener('click', () => {
-      modalMotivo = mot;
-      renderChips();
-    });
+    b.addEventListener('click', () => { modalMotivo = mot; renderChips(); });
     box.appendChild(b);
   });
 }
@@ -692,17 +815,20 @@ function confirmStop(){
   if(!modalMachine) return;
   if(!modalMotivo){ toast('Selecione um motivo para a parada.'); return; }
 
-  db.active[modalMachine] = {
+  const obs = document.getElementById('modalObs').value.trim();
+  const produto = getProd(modalMachine);
+
+  // Atualização otimista local (o listener vai confirmar em seguida)
+  state.active[modalMachine] = {
     start: new Date().toISOString(),
     motivo: modalMotivo,
-    obs: document.getElementById('modalObs').value.trim(),
-    produto: getProd(modalMachine)
+    obs,
+    produto
   };
-  save();
-  closeModal();
   paintCards();
-  renderDashboard();
-  renderHistory();
+  closeModal();
+
+  iniciarParadaFirebase(modalMachine, modalMotivo, obs, produto);
   toast('Parada iniciada · ' + modalMachine);
 }
 
@@ -710,24 +836,25 @@ function confirmStop(){
    INICIAR / ENCERRAR PARADA
    ========================================================= */
 function endStop(m){
-  const a = db.active[m];
+  const a = state.active[m];
   if(!a) return;
 
-  db.history.unshift({
-    id: 'p' + Date.now() + Math.random().toString(36).slice(2,6),
-    machine: m,
+  // Otimista local
+  state.history.unshift({
+    id: 'tmp_' + Date.now(),
+    maquina: m,
     motivo: a.motivo,
     obs: a.obs || '',
     produto: a.produto || getProd(m),
     start: a.start,
     end: new Date().toISOString()
   });
-  delete db.active[m];
-
-  save();
+  delete state.active[m];
   paintCards();
   renderHistory();
   renderDashboard();
+
+  encerrarParadaFirebase(m);
   toast('Parada encerrada · ' + m);
 }
 
@@ -746,11 +873,25 @@ function stopsForDashboard(){
   const since = periodSince(period);
 
   const list = [];
-
-  Object.entries(db.active).forEach(([m,a]) => {
-    list.push({ machine:m, motivo:a.motivo, obs:a.obs, produto:a.produto || getProd(m), start:a.start, end:null, ongoing:true });
+  Object.entries(state.active).forEach(([m,a]) => {
+    list.push({
+      machine:m, motivo:a.motivo, obs:a.obs,
+      produto: a.produto || getProd(m),
+      start:a.start, end:null, ongoing:true
+    });
   });
-  db.history.forEach(s => list.push(Object.assign({}, s, { ongoing:false })));
+  state.history.forEach(s => {
+    list.push({
+      id: s.id,
+      machine: s.maquina,
+      motivo: s.motivo,
+      obs: s.obs,
+      produto: s.produto,
+      start: s.start,
+      end: s.end,
+      ongoing: false
+    });
+  });
 
   return list
     .filter(s => new Date(s.start).getTime() >= since)
@@ -785,12 +926,10 @@ function renderDashboard(){
   const stops = stopsForDashboard();
   const { byMachine, byMotivo, byProduto } = aggregate(stops);
   const totalTime = stops.reduce((acc,s) => acc + durOf(s), 0);
-  const activeList = Object.entries(db.active);
+  const activeList = Object.entries(state.active);
 
-  /* ---------- KPIs ---------- */
   const topMachine = byMachine[0];
   const topMotivo  = byMotivo[0];
-  const topProduto = byProduto[0];
   const avg = stops.length ? totalTime / stops.length : 0;
 
   document.getElementById('kpis').innerHTML = `
@@ -816,7 +955,7 @@ function renderDashboard(){
     </div>
   `;
 
-  /* ---------- BARRAS: MÁQUINAS ---------- */
+  // Barras: máquinas
   const boxM = document.getElementById('chartMachines');
   if(!byMachine.length){
     boxM.innerHTML = '<p class="empty">Sem paradas no período selecionado.</p>';
@@ -831,7 +970,7 @@ function renderDashboard(){
     `).join('');
   }
 
-  /* ---------- BARRAS: MOTIVOS ---------- */
+  // Barras: motivos
   const boxMo = document.getElementById('chartMotivos');
   if(!byMotivo.length){
     boxMo.innerHTML = '<p class="empty">Sem paradas no período selecionado.</p>';
@@ -846,9 +985,9 @@ function renderDashboard(){
     `).join('');
   }
 
-  /* ---------- BARRAS: PRODUTOS ---------- */
+  // Barras: produtos
   const boxP = document.getElementById('chartProdutos');
-  if(!byProduto.length || (byProduto.length === 1 && byProduto[0].label === 'Não informado' && !byProduto[0].time)){
+  if(!byProduto.length){
     boxP.innerHTML = '<p class="empty">Nenhum produto informado nos registros.</p>';
   }else{
     const max = Math.max.apply(null, byProduto.map(x => x.time)) || 1;
@@ -861,11 +1000,10 @@ function renderDashboard(){
     `).join('');
   }
 
-  /* ---------- DONUT ---------- */
+  // Donut
   const donut = document.getElementById('donut');
   const legend = document.getElementById('donutLegend');
   const dTotal = document.getElementById('donutTotal');
-
   const motivosPorTempo = byMotivo.slice().sort((a,b) => b.time - a.time).filter(x => x.time > 0);
 
   if(!motivosPorTempo.length || totalTime <= 0){
@@ -882,7 +1020,6 @@ function renderDashboard(){
     });
     donut.style.background = 'conic-gradient(' + segs.join(', ') + ')';
     dTotal.textContent = fmtDurLong(totalTime);
-
     legend.innerHTML = motivosPorTempo.map((x,i) => {
       const pct = (x.time / totalTime * 100).toFixed(1);
       return `
@@ -894,7 +1031,7 @@ function renderDashboard(){
     }).join('');
   }
 
-  /* ---------- RANKING ---------- */
+  // Ranking
   const rank = document.getElementById('rankBody');
   if(!byMachine.length){
     rank.innerHTML = '<tr><td colspan="6" class="empty">Sem paradas no período selecionado.</td></tr>';
@@ -911,7 +1048,6 @@ function renderDashboard(){
     `).join('');
   }
 
-  /* ---------- RESUMO WHATSAPP ---------- */
   document.getElementById('waText').value = buildSummary(stops, byMachine, byMotivo, byProduto, totalTime);
 }
 
@@ -920,11 +1056,8 @@ function renderDashboard(){
    ========================================================= */
 function buildSummary(stops, byMachine, byMotivo, byProduto, totalTime){
   const periodKey = document.getElementById('dashPeriod').value;
-  const periodLabel = {
-    'hoje':'Hoje', '7':'Últimos 7 dias', '30':'Últimos 30 dias', 'all':'Período completo'
-  }[periodKey];
-
-  const activeList = Object.entries(db.active);
+  const periodLabel = { 'hoje':'Hoje', '7':'Últimos 7 dias', '30':'Últimos 30 dias', 'all':'Período completo' }[periodKey];
+  const activeList = Object.entries(state.active);
   const avg = stops.length ? totalTime / stops.length : 0;
 
   let t = '';
@@ -933,13 +1066,11 @@ function buildSummary(stops, byMachine, byMotivo, byProduto, totalTime){
   t += '━━━━━━━━━━━━━━━━━━━━\n';
   t += '🔧 *Paradas registradas:* ' + stops.length + '\n';
   t += '⏱ *Tempo total parado:* ' + fmtDurLong(totalTime) + '\n';
-  t += '📊 *Tempo médio por parada:* ' + fmtDurLong(avg) + '\n';
-  t += '\n';
+  t += '📊 *Tempo médio por parada:* ' + fmtDurLong(avg) + '\n\n';
 
-  // NOVA SEÇÃO: Produtos em produção
   t += '*📦 PRODUTOS EM PRODUÇÃO (AGORA)*\n';
   MACHINES.forEach(m => {
-    const p = db.produtos[m] && db.produtos[m].trim() ? db.produtos[m].trim() : 'Não informado';
+    const p = state.produtos[m] && state.produtos[m].trim() ? state.produtos[m].trim() : 'Não informado';
     t += '• ' + m + ' → ' + p + '\n';
   });
   t += '\n';
@@ -956,8 +1087,7 @@ function buildSummary(stops, byMachine, byMotivo, byProduto, totalTime){
   if(byMachine.length){
     t += '*🏭 TEMPO PARADO POR MÁQUINA*\n';
     byMachine.slice(0,8).forEach((x,i) => {
-      t += (i+1) + 'º ' + x.label + ' — ' + fmtDurLong(x.time) +
-           ' (' + x.count + ' parada' + (x.count > 1 ? 's' : '') + ')\n';
+      t += (i+1) + 'º ' + x.label + ' — ' + fmtDurLong(x.time) + ' (' + x.count + ' parada' + (x.count > 1 ? 's' : '') + ')\n';
     });
     t += '\n';
   }
@@ -965,8 +1095,7 @@ function buildSummary(stops, byMachine, byMotivo, byProduto, totalTime){
   if(byProduto.length && !(byProduto.length === 1 && byProduto[0].label === 'Não informado')){
     t += '*📦 PRODUTOS MAIS AFETADOS*\n';
     byProduto.slice(0,6).forEach((x,i) => {
-      t += (i+1) + 'º ' + x.label + ' — ' + fmtDurLong(x.time) +
-           ' (' + x.count + ' parada' + (x.count > 1 ? 's' : '') + ')\n';
+      t += (i+1) + 'º ' + x.label + ' — ' + fmtDurLong(x.time) + ' (' + x.count + ' parada' + (x.count > 1 ? 's' : '') + ')\n';
     });
     t += '\n';
   }
@@ -993,10 +1122,25 @@ function historyRows(){
   const since = periodSince(pf);
 
   const list = [];
-  Object.entries(db.active).forEach(([m,a]) => {
-    list.push({ machine:m, motivo:a.motivo, obs:a.obs, produto:a.produto || getProd(m), start:a.start, end:null, ongoing:true });
+  Object.entries(state.active).forEach(([m,a]) => {
+    list.push({
+      machine:m, motivo:a.motivo, obs:a.obs,
+      produto: a.produto || getProd(m),
+      start:a.start, end:null, ongoing:true
+    });
   });
-  db.history.forEach(s => list.push(Object.assign({}, s, { ongoing:false })));
+  state.history.forEach(s => {
+    list.push({
+      id: s.id,
+      machine: s.maquina,
+      motivo: s.motivo,
+      obs: s.obs,
+      produto: s.produto,
+      start: s.start,
+      end: s.end,
+      ongoing: false
+    });
+  });
 
   return list
     .filter(s => {
@@ -1019,9 +1163,7 @@ function renderHistory(){
 
   body.innerHTML = rows.map(s => {
     const dur = fmtDur(durOf(s));
-    const fim = s.ongoing
-      ? '<span class="pill">EM ANDAMENTO</span>'
-      : fmtDT(s.end);
+    const fim = s.ongoing ? '<span class="pill">EM ANDAMENTO</span>' : fmtDT(s.end);
     const acao = s.ongoing
       ? `<button class="icon-btn" data-end="${esc(s.machine)}" title="Encerrar parada">⏹</button>`
       : `<button class="icon-btn" data-del="${esc(s.id)}" title="Excluir registro">🗑</button>`;
@@ -1041,12 +1183,11 @@ function renderHistory(){
 }
 
 /* =========================================================
-   FILTROS DINÂMICOS
+   FILTROS
    ========================================================= */
 function fillFilters(){
   const selM = document.getElementById('hMachine');
   const selMo = document.getElementById('hMotivo');
-
   MACHINES.forEach(m => {
     const o = document.createElement('option');
     o.value = m; o.textContent = m;
@@ -1068,7 +1209,6 @@ function exportCSV(){
 
   const head = ['Maquina','Produto','Motivo','Inicio','Fim','Duracao (min)','Observacao'];
   const lines = [head.join(';')];
-
   rows.forEach(s => {
     lines.push([
       s.machine,
@@ -1125,8 +1265,10 @@ document.getElementById('hBody').addEventListener('click', e => {
   if(del){
     const id = del.dataset.del;
     if(confirm('Excluir este registro do histórico?')){
-      db.history = db.history.filter(s => s.id !== id);
-      save(); renderHistory(); renderDashboard();
+      state.history = state.history.filter(s => s.id !== id);
+      renderHistory();
+      renderDashboard();
+      excluirParadaFirebase(id);
       toast('Registro excluído.');
     }
   }
@@ -1142,10 +1284,9 @@ document.getElementById('hMotivo').addEventListener('change', renderHistory);
 document.getElementById('btnCsv').addEventListener('click', exportCSV);
 
 document.getElementById('btnClear').addEventListener('click', () => {
-  if(!db.history.length){ toast('Histórico já está vazio.'); return; }
+  if(!state.history.length){ toast('Histórico já está vazio.'); return; }
   if(confirm('Apagar TODO o histórico de paradas? Esta ação não pode ser desfeita.')){
-    db.history = [];
-    save(); renderHistory(); renderDashboard();
+    limparHistoricoFirebase();
     toast('Histórico apagado.');
   }
 });
@@ -1181,19 +1322,17 @@ document.getElementById('waCopy').addEventListener('click', async () => {
 });
 
 /* =========================================================
-   RELÓGIO / TICK
+   TICK (relógio + timers)
    ========================================================= */
 let dashTick = 0;
 function tick(){
   const now = new Date();
   document.getElementById('liveClock').textContent =
     pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
-
   paintCards();
 
   dashTick++;
-  const dashVisible = document.getElementById('view-dashboard').classList.contains('active');
-  if(dashVisible && dashTick % 10 === 0 && Object.keys(db.active).length){
+  if(dashTick % 5 === 0 && document.getElementById('view-dashboard').classList.contains('active')){
     renderDashboard();
   }
 }
@@ -1202,13 +1341,13 @@ function tick(){
    INICIALIZAÇÃO
    ========================================================= */
 function init(){
-  load();
   fillFilters();
   renderMachines();
   renderHistory();
   renderDashboard();
   tick();
   setInterval(tick, 1000);
+  startListeners();
 }
 
 init();
