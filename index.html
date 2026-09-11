@@ -282,7 +282,6 @@
 </nav>
 
 <main>
-  <!-- PAINEL -->
   <section class="view active" id="view-painel">
     <div class="section-head">
       <h2>Máquinas em operação</h2>
@@ -294,7 +293,6 @@
     <div class="machine-grid" id="machineGrid"></div>
   </section>
 
-  <!-- HISTÓRICO -->
   <section class="view" id="view-historico">
     <div class="section-head"><h2>Histórico de paradas</h2></div>
     <div class="toolbar">
@@ -323,7 +321,6 @@
     </div>
   </section>
 
-  <!-- DASHBOARD -->
   <section class="view" id="view-dashboard">
     <div class="section-head"><h2>Dashboard de indicadores</h2></div>
     <div class="toolbar">
@@ -396,7 +393,6 @@
   </section>
 </main>
 
-<!-- MODAL -->
 <div class="modal-backdrop" id="modal" hidden>
   <div class="modal">
     <h3>Registrar parada · <span id="modalMachine">—</span></h3>
@@ -418,16 +414,27 @@
 
 <div id="toast"></div>
 
+<!-- =========================================================
+     FIREBASE SDK v10 (MODULAR)
+     ========================================================= -->
 <script type="module">
-/* =========================================================
-   FIREBASE SDK
-   ========================================================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  addDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
+// =========================================================
+// FIREBASE CONFIG
+// =========================================================
 const firebaseConfig = {
   apiKey: "AIzaSyA8sTQx2u4vn_nXzqhJbv1EcPbFKSBjLLs",
   authDomain: "termoformagem-2c2ef.firebaseapp.com",
@@ -438,13 +445,21 @@ const firebaseConfig = {
   measurementId: "G-EKQ90STVSH"
 };
 
+// =========================================================
+// INICIALIZAÇÃO FIREBASE
+// =========================================================
 const app = initializeApp(firebaseConfig);
-const fdb = getFirestore(app);
-try { getAnalytics(app); } catch(e){ console.warn('Analytics indisponível', e); }
+const fdb = getFirestore(app);  // <-- ESSENCIAL: instância do Firestore
 
-/* =========================================================
-   CONFIGURAÇÃO
-   ========================================================= */
+try {
+  getAnalytics(app);
+} catch (e) {
+  console.warn('Analytics indisponível', e);
+}
+
+// =========================================================
+// CONFIGURAÇÃO
+// =========================================================
 const MACHINES = [
   "600/2","600/3","600/4",
   "790/1","790/2","790/3","790/4",
@@ -465,9 +480,9 @@ const PALETTE = ['#372A8C','#5B4BC4','#8B7BEC','#A99CF2','#C7BEFA','#4B3BB0','#6
 // Firestore doc id não pode conter "/"
 const mid = m => m.replace(/\//g, '_');
 
-/* =========================================================
-   ESTADO LOCAL (espelho em tempo real do Firestore)
-   ========================================================= */
+// =========================================================
+// ESTADO LOCAL
+// =========================================================
 const state = {
   active:  {}, // maquina -> { start, motivo, obs, produto }
   history: [], // array de paradas
@@ -478,10 +493,11 @@ let cardRefs = {};
 let modalMachine = null;
 let modalMotivo = null;
 let firebaseReady = false;
+let initialLoadDone = false;
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
+// =========================================================
+// HELPERS
+// =========================================================
 const pad = n => String(n).padStart(2,'0');
 
 function fmtDur(sec){
@@ -530,9 +546,9 @@ function setConn(ok, text){
   document.getElementById('connText').textContent = text;
 }
 
-/* =========================================================
-   PAINEL DE MÁQUINAS
-   ========================================================= */
+// =========================================================
+// PAINEL DE MÁQUINAS
+// =========================================================
 function renderMachines(){
   const grid = document.getElementById('machineGrid');
   grid.innerHTML = '';
@@ -637,9 +653,9 @@ function paintCards(){
   });
 }
 
-/* =========================================================
-   FIREBASE — ESCRITA
-   ========================================================= */
+// =========================================================
+// FIREBASE — ESCRITA (com logs)
+// =========================================================
 async function salvarProduto(m, valor){
   const r = cardRefs[m];
   if(r){
@@ -649,29 +665,35 @@ async function salvarProduto(m, valor){
     r.label._t = setTimeout(() => r.label.classList.remove('saved'), 900);
   }
   try {
-    await setDoc(doc(fdb, 'produtos', mid(m)), {
+    console.log('[Firebase] Salvando produto:', m, '=', valor);
+    const docRef = doc(fdb, 'produtos', mid(m));
+    await setDoc(docRef, {
       maquina: m,
       produto: valor || '',
       updatedAt: new Date().toISOString()
     });
+    console.log('[Firebase] Produto salvo com sucesso!');
   } catch(e){
     console.error('Erro ao salvar produto:', e);
-    toast('Erro ao salvar produto (verifique conexão)');
+    toast('Erro ao salvar produto: ' + e.message);
   }
 }
 
 async function iniciarParadaFirebase(m, motivo, obs, produto){
   try {
-    await setDoc(doc(fdb, 'ativas', mid(m)), {
+    console.log('[Firebase] Iniciando parada:', m);
+    const docRef = doc(fdb, 'ativas', mid(m));
+    await setDoc(docRef, {
       maquina: m,
       motivo,
       obs: obs || '',
       produto: produto || 'Não informado',
       start: new Date().toISOString()
     });
+    console.log('[Firebase] Parada iniciada com sucesso!');
   } catch(e){
     console.error('Erro ao iniciar parada:', e);
-    toast('Erro ao iniciar parada (verifique conexão)');
+    toast('Erro ao iniciar parada: ' + e.message);
   }
 }
 
@@ -679,8 +701,10 @@ async function encerrarParadaFirebase(m){
   const a = state.active[m];
   if(!a) return;
   try {
-    const paradaRef = doc(collection(fdb, 'paradas'));
-    await setDoc(paradaRef, {
+    console.log('[Firebase] Encerrando parada:', m);
+    // Adiciona ao histórico com ID automático
+    const colRef = collection(fdb, 'paradas');
+    const docRef = await addDoc(colRef, {
       maquina: m,
       motivo: a.motivo,
       obs: a.obs || '',
@@ -688,16 +712,21 @@ async function encerrarParadaFirebase(m){
       start: a.start,
       end: new Date().toISOString()
     });
+    console.log('[Firebase] Parada registrada com ID:', docRef.id);
+    // Remove da coleção de ativas
     await deleteDoc(doc(fdb, 'ativas', mid(m)));
+    console.log('[Firebase] Parada ativa removida!');
   } catch(e){
     console.error('Erro ao encerrar parada:', e);
-    toast('Erro ao encerrar parada (verifique conexão)');
+    toast('Erro ao encerrar parada: ' + e.message);
   }
 }
 
 async function excluirParadaFirebase(id){
   try {
+    console.log('[Firebase] Excluindo parada:', id);
     await deleteDoc(doc(fdb, 'paradas', id));
+    console.log('[Firebase] Parada excluída!');
   } catch(e){
     console.error('Erro ao excluir parada:', e);
     toast('Erro ao excluir');
@@ -707,19 +736,24 @@ async function excluirParadaFirebase(id){
 async function limparHistoricoFirebase(){
   try {
     const ids = state.history.map(s => s.id);
+    console.log('[Firebase] Limpando histórico...', ids.length, 'registros');
     await Promise.all(ids.map(id => deleteDoc(doc(fdb, 'paradas', id))));
+    console.log('[Firebase] Histórico limpo!');
   } catch(e){
     console.error('Erro ao limpar histórico:', e);
     toast('Erro ao limpar histórico');
   }
 }
 
-/* =========================================================
-   FIREBASE — LISTENERS EM TEMPO REAL
-   ========================================================= */
+// =========================================================
+// FIREBASE — LISTENERS EM TEMPO REAL
+// =========================================================
 function startListeners(){
-  // Produtos
+  console.log('[Firebase] Iniciando listeners...');
+
+  // --- PRODUTOS ---
   onSnapshot(collection(fdb, 'produtos'), snap => {
+    console.log('[Firebase] Produtos atualizados:', snap.size);
     state.produtos = {};
     snap.forEach(d => {
       const data = d.data() || {};
@@ -727,15 +761,20 @@ function startListeners(){
     });
     paintCards();
     refreshAllViews();
-    setConn(true, 'Sincronizado');
-    firebaseReady = true;
+    if(!initialLoadDone){
+      initialLoadDone = true;
+      setConn(true, 'Sincronizado');
+      firebaseReady = true;
+      console.log('[Firebase] ✅ Conectado e sincronizado!');
+    }
   }, err => {
     console.error('Listener produtos:', err);
     setConn(false, 'Erro conexão');
   });
 
-  // Paradas ativas
+  // --- PARADAS ATIVAS ---
   onSnapshot(collection(fdb, 'ativas'), snap => {
+    console.log('[Firebase] Ativas atualizadas:', snap.size);
     state.active = {};
     snap.forEach(d => {
       const data = d.data() || {};
@@ -745,9 +784,10 @@ function startListeners(){
     refreshAllViews();
   }, err => console.error('Listener ativas:', err));
 
-  // Histórico
+  // --- HISTÓRICO ---
   const q = query(collection(fdb, 'paradas'), orderBy('start', 'desc'));
   onSnapshot(q, snap => {
+    console.log('[Firebase] Histórico atualizado:', snap.size);
     state.history = [];
     snap.forEach(d => {
       const data = d.data() || {};
@@ -755,9 +795,10 @@ function startListeners(){
     });
     refreshAllViews();
   }, err => {
-    console.error('Listener paradas:', err);
-    // Fallback sem ordenação (caso índice ainda não esteja pronto)
+    console.error('Listener paradas (com orderBy):', err);
+    // Fallback sem ordenação
     onSnapshot(collection(fdb, 'paradas'), snap2 => {
+      console.log('[Firebase] Histórico (fallback):', snap2.size);
       state.history = [];
       snap2.forEach(d => {
         const data = d.data() || {};
@@ -773,15 +814,12 @@ function refreshAllViews(){
   const dashVisible = document.getElementById('view-dashboard').classList.contains('active');
   if(histVisible) renderHistory();
   if(dashVisible) renderDashboard();
-  else {
-    // mantém dashboard em cache atualizado quando voltar
-    renderDashboard();
-  }
+  else renderDashboard();
 }
 
-/* =========================================================
-   MODAL DE PARADA
-   ========================================================= */
+// =========================================================
+// MODAL DE PARADA
+// =========================================================
 function renderChips(){
   const box = document.getElementById('motivoChips');
   box.innerHTML = '';
@@ -818,7 +856,7 @@ function confirmStop(){
   const obs = document.getElementById('modalObs').value.trim();
   const produto = getProd(modalMachine);
 
-  // Atualização otimista local (o listener vai confirmar em seguida)
+  // Atualização otimista local
   state.active[modalMachine] = {
     start: new Date().toISOString(),
     motivo: modalMotivo,
@@ -832,9 +870,9 @@ function confirmStop(){
   toast('Parada iniciada · ' + modalMachine);
 }
 
-/* =========================================================
-   INICIAR / ENCERRAR PARADA
-   ========================================================= */
+// =========================================================
+// INICIAR / ENCERRAR PARADA
+// =========================================================
 function endStop(m){
   const a = state.active[m];
   if(!a) return;
@@ -858,9 +896,9 @@ function endStop(m){
   toast('Parada encerrada · ' + m);
 }
 
-/* =========================================================
-   AGREGAÇÃO / FILTROS
-   ========================================================= */
+// =========================================================
+// AGREGAÇÃO / FILTROS
+// =========================================================
 function periodSince(period){
   if(period === 'hoje') return startOfToday();
   if(period === '7')    return Date.now() - 7  * 864e5;
@@ -919,9 +957,9 @@ function aggregate(stops){
   };
 }
 
-/* =========================================================
-   DASHBOARD
-   ========================================================= */
+// =========================================================
+// DASHBOARD
+// =========================================================
 function renderDashboard(){
   const stops = stopsForDashboard();
   const { byMachine, byMotivo, byProduto } = aggregate(stops);
@@ -955,7 +993,6 @@ function renderDashboard(){
     </div>
   `;
 
-  // Barras: máquinas
   const boxM = document.getElementById('chartMachines');
   if(!byMachine.length){
     boxM.innerHTML = '<p class="empty">Sem paradas no período selecionado.</p>';
@@ -970,7 +1007,6 @@ function renderDashboard(){
     `).join('');
   }
 
-  // Barras: motivos
   const boxMo = document.getElementById('chartMotivos');
   if(!byMotivo.length){
     boxMo.innerHTML = '<p class="empty">Sem paradas no período selecionado.</p>';
@@ -985,7 +1021,6 @@ function renderDashboard(){
     `).join('');
   }
 
-  // Barras: produtos
   const boxP = document.getElementById('chartProdutos');
   if(!byProduto.length){
     boxP.innerHTML = '<p class="empty">Nenhum produto informado nos registros.</p>';
@@ -1000,7 +1035,6 @@ function renderDashboard(){
     `).join('');
   }
 
-  // Donut
   const donut = document.getElementById('donut');
   const legend = document.getElementById('donutLegend');
   const dTotal = document.getElementById('donutTotal');
@@ -1031,7 +1065,6 @@ function renderDashboard(){
     }).join('');
   }
 
-  // Ranking
   const rank = document.getElementById('rankBody');
   if(!byMachine.length){
     rank.innerHTML = '<tr><td colspan="6" class="empty">Sem paradas no período selecionado.</td></tr>';
@@ -1051,9 +1084,9 @@ function renderDashboard(){
   document.getElementById('waText').value = buildSummary(stops, byMachine, byMotivo, byProduto, totalTime);
 }
 
-/* =========================================================
-   RESUMO WHATSAPP
-   ========================================================= */
+// =========================================================
+// RESUMO WHATSAPP
+// =========================================================
 function buildSummary(stops, byMachine, byMotivo, byProduto, totalTime){
   const periodKey = document.getElementById('dashPeriod').value;
   const periodLabel = { 'hoje':'Hoje', '7':'Últimos 7 dias', '30':'Últimos 30 dias', 'all':'Período completo' }[periodKey];
@@ -1112,9 +1145,9 @@ function buildSummary(stops, byMachine, byMotivo, byProduto, totalTime){
   return t;
 }
 
-/* =========================================================
-   HISTÓRICO
-   ========================================================= */
+// =========================================================
+// HISTÓRICO
+// =========================================================
 function historyRows(){
   const mf = document.getElementById('hMachine').value;
   const mo = document.getElementById('hMotivo').value;
@@ -1182,9 +1215,9 @@ function renderHistory(){
   }).join('');
 }
 
-/* =========================================================
-   FILTROS
-   ========================================================= */
+// =========================================================
+// FILTROS
+// =========================================================
 function fillFilters(){
   const selM = document.getElementById('hMachine');
   const selMo = document.getElementById('hMotivo');
@@ -1200,9 +1233,9 @@ function fillFilters(){
   });
 }
 
-/* =========================================================
-   CSV
-   ========================================================= */
+// =========================================================
+// CSV
+// =========================================================
 function exportCSV(){
   const rows = historyRows();
   if(!rows.length){ toast('Nada para exportar.'); return; }
@@ -1231,9 +1264,9 @@ function exportCSV(){
   toast('CSV exportado.');
 }
 
-/* =========================================================
-   NAVEGAÇÃO
-   ========================================================= */
+// =========================================================
+// NAVEGAÇÃO
+// =========================================================
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
@@ -1246,9 +1279,9 @@ document.querySelectorAll('.tab').forEach(btn => {
   });
 });
 
-/* =========================================================
-   EVENTOS
-   ========================================================= */
+// =========================================================
+// EVENTOS
+// =========================================================
 document.getElementById('modalCancel').addEventListener('click', closeModal);
 document.getElementById('modalConfirm').addEventListener('click', confirmStop);
 document.getElementById('modal').addEventListener('click', e => {
@@ -1321,9 +1354,9 @@ document.getElementById('waCopy').addEventListener('click', async () => {
   }
 });
 
-/* =========================================================
-   TICK (relógio + timers)
-   ========================================================= */
+// =========================================================
+// TICK (relógio + timers)
+// =========================================================
 let dashTick = 0;
 function tick(){
   const now = new Date();
@@ -1337,10 +1370,11 @@ function tick(){
   }
 }
 
-/* =========================================================
-   INICIALIZAÇÃO
-   ========================================================= */
+// =========================================================
+// INICIALIZAÇÃO
+// =========================================================
 function init(){
+  console.log('[App] Inicializando Termoformagem...');
   fillFilters();
   renderMachines();
   renderHistory();
